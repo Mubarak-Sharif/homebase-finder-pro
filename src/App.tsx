@@ -1,12 +1,32 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index";
-import Properties from "./pages/Properties";
-import PropertyDetail from "./pages/PropertyDetail";
-import Favorites from "./pages/Favorites";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { OrderProvider } from "@/contexts/OrderContext";
+import { DataProvider } from "@/contexts/DataContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
+import Welcome from "./pages/Welcome";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Home from "./pages/Home";
+import Categories from "./pages/Categories";
+import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import MyOrders from "./pages/MyOrders";
+import Profile from "./pages/Profile";
+import Calculator from "./pages/Calculator";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminProducts from "./pages/admin/Products";
+import AdminCategories from "./pages/admin/Categories";
+import AdminOrders from "./pages/admin/Orders";
+import AdminUsers from "./pages/admin/Users";
+import CommissionerPanel from "./pages/admin/CommissionerPanel";
+import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,16 +35,38 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/properties" element={<Properties />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <DataProvider>
+          <CartProvider>
+            <OrderProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/welcome" element={<Welcome />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/" element={<Home />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                  <Route path="/orders" element={<MyOrders />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/calculator" element={<Calculator />} />
+                  <Route path="/admin" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/products" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminProducts /></ProtectedRoute>} />
+                  <Route path="/admin/categories" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminCategories /></ProtectedRoute>} />
+                  <Route path="/admin/orders" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminOrders /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute roles={["ADMIN", "COMMISSIONER_PA_ADMIN"]}><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/commissioner" element={<ProtectedRoute roles={["COMMISSIONER_PA_ADMIN"]}><CommissionerPanel /></ProtectedRoute>} />
+                  <Route path="/admin/settings" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminSettings /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </OrderProvider>
+          </CartProvider>
+        </DataProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
