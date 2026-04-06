@@ -17,7 +17,7 @@ const Cart = () => {
     return product ? { ...ci, product } : null;
   }).filter(Boolean) as { productId: string; quantity: number; product: typeof products[0] }[];
 
-  const subtotal = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const subtotal = items.reduce((sum, i) => sum + Number(i.product.price_per_sqft) * i.quantity, 0);
 
   if (items.length === 0) return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -37,48 +37,41 @@ const Cart = () => {
       <TopBar />
       <div className="container mx-auto px-4 py-6">
         <h1 className="font-heading text-3xl font-bold text-foreground mb-6">Your Cart</h1>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-3">
-            {items.map(item => (
-              <div key={item.productId} className="bg-card border border-border rounded-lg p-4 flex gap-4">
-                <img src={item.product.images[0]} alt={item.product.name} className="w-20 h-20 rounded-md object-cover" />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-heading text-lg font-semibold text-foreground truncate">{item.product.name}</h3>
-                  <p className="text-sm text-primary">Rs. {item.product.price.toLocaleString()}/sqft</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <button onClick={() => updateQuantity(item.productId, item.quantity - 5)} className="w-7 h-7 rounded bg-secondary flex items-center justify-center text-foreground">
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <input type="number" value={item.quantity} onChange={e => updateQuantity(item.productId, Number(e.target.value))} min={1}
-                      className="w-16 text-center px-2 py-1 rounded bg-secondary border border-border text-sm text-foreground outline-none" />
-                    <button onClick={() => updateQuantity(item.productId, item.quantity + 5)} className="w-7 h-7 rounded bg-secondary flex items-center justify-center text-foreground">
-                      <Plus className="w-3 h-3" />
-                    </button>
-                    <span className="text-xs text-muted-foreground">sqft</span>
+            {items.map(item => {
+              const imgSrc = item.product.primary_image_url || item.product.gallery_image_urls?.[0] || "/placeholder.svg";
+              const price = Number(item.product.price_per_sqft);
+              return (
+                <div key={item.productId} className="bg-card border border-border rounded-lg p-4 flex gap-4">
+                  <img src={imgSrc} alt={item.product.name} className="w-20 h-20 rounded-md object-cover" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-heading text-lg font-semibold text-foreground truncate">{item.product.name}</h3>
+                    <p className="text-sm text-primary">Rs. {price.toLocaleString()}/sqft</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <button onClick={() => updateQuantity(item.productId, item.quantity - 5)} className="w-7 h-7 rounded bg-secondary flex items-center justify-center text-foreground"><Minus className="w-3 h-3" /></button>
+                      <input type="number" value={item.quantity} onChange={e => updateQuantity(item.productId, Number(e.target.value))} min={1}
+                        className="w-16 text-center px-2 py-1 rounded bg-secondary border border-border text-sm text-foreground outline-none" />
+                      <button onClick={() => updateQuantity(item.productId, item.quantity + 5)} className="w-7 h-7 rounded bg-secondary flex items-center justify-center text-foreground"><Plus className="w-3 h-3" /></button>
+                      <span className="text-xs text-muted-foreground">sqft</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end justify-between">
+                    <p className="font-semibold text-foreground">Rs. {(price * item.quantity).toLocaleString()}</p>
+                    <button onClick={() => removeFromCart(item.productId)} className="text-destructive hover:text-destructive/80"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
-                <div className="flex flex-col items-end justify-between">
-                  <p className="font-semibold text-foreground">Rs. {(item.product.price * item.quantity).toLocaleString()}</p>
-                  <button onClick={() => removeFromCart(item.productId)} className="text-destructive hover:text-destructive/80">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-
-          {/* Summary */}
           <div className="bg-card border border-border rounded-lg p-6 h-fit sticky top-20 space-y-4">
             <h3 className="font-heading text-xl font-semibold text-foreground">Order Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="text-foreground">Rs. {subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span className="text-xs text-primary">To be confirmed</span></div>
             </div>
-            <div className="border-t border-border pt-3 flex justify-between font-bold">
-              <span>Total</span><span className="text-primary">Rs. {subtotal.toLocaleString()}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">{settings.deliveryInfo}</p>
+            <div className="border-t border-border pt-3 flex justify-between font-bold"><span>Total</span><span className="text-primary">Rs. {subtotal.toLocaleString()}</span></div>
+            <p className="text-[11px] text-muted-foreground">{settings?.delivery_info}</p>
             <div className="space-y-2">
               {isAuthenticated ? (
                 <Link to="/checkout"><Button className="w-full gold-gradient text-primary-foreground">Proceed to Checkout</Button></Link>

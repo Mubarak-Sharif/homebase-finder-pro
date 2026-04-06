@@ -1,54 +1,92 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Product, Category, AppSettings, mockProducts, mockCategories, defaultSettings } from "@/data/mockData";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import {
+  DbCategory, DbProduct, DbAppSettings,
+  getCategories as fetchCategories,
+  getProducts as fetchProducts,
+  getAppSettings as fetchSettings,
+  addCategory as apiAddCategory,
+  updateCategory as apiUpdateCategory,
+  addProduct as apiAddProduct,
+  updateProduct as apiUpdateProduct,
+  deleteProduct as apiDeleteProduct,
+  upsertAppSettings as apiUpsertSettings,
+} from "@/lib/supabase-api";
 
 interface DataContextType {
-  products: Product[];
-  categories: Category[];
-  settings: AppSettings;
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  addCategory: (category: Category) => void;
-  updateCategory: (id: string, updates: Partial<Category>) => void;
-  updateSettings: (updates: Partial<AppSettings>) => void;
-  getProductsByCategory: (categoryId: string) => Product[];
-  getFeaturedProducts: () => Product[];
+  products: DbProduct[];
+  categories: DbCategory[];
+  settings: DbAppSettings | null;
+  loading: boolean;
+  error: string | null;
+  addProduct: (product: Omit<DbProduct, "id" | "created_at" | "updated_at">) => Promise<void>;
+  updateProduct: (id: string, updates: Partial<DbProduct>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  addCategory: (category: Omit<DbCategory, "id" | "created_at" | "updated_at">) => Promise<void>;
+  updateCategory: (id: string, updates: Partial<DbCategory>) => Promise<void>;
+  updateSettings: (updates: Partial<DbAppSettings>) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
-const PRODUCTS_KEY = "bs_marble_products";
-const CATEGORIES_KEY = "bs_marble_categories";
-const SETTINGS_KEY = "bs_marble_settings";
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
-  const [products, setProducts] = useState<Product[]>(() => {
-    const s = localStorage.getItem(PRODUCTS_KEY);
-    return s ? JSON.parse(s) : mockProducts;
-  });
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const s = localStorage.getItem(CATEGORIES_KEY);
-    return s ? JSON.parse(s) : mockCategories;
-  });
-  const [settings, setSettings] = useState<AppSettings>(() => {
-    const s = localStorage.getItem(SETTINGS_KEY);
-    return s ? JSON.parse(s) : defaultSettings;
-  });
+  const [products, setProducts] = useState<DbProduct[]>([]);
+  const [categories, setCategories] = useState<DbCategory[]>([]);
+  const [settings, setSettings] = useState<DbAppSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); }, [products]);
-  useEffect(() => { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories)); }, [categories]);
-  useEffect(() => { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }, [settings]);
+  const loadAll = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [cats, prods, sett] = await Promise.all([fetchCategories(), fetchProducts(), fetchSettings()]);
+      setCategories(cats);
+      setProducts(prods);
+      setSettings(sett);
+    } catch (err: any) {
+      console.error("DataProvider load error:", err);
+      setError("Unable to load data right now. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const addProduct = (product: Product) => setProducts(prev => [...prev, product]);
-  const updateProduct = (id: string, updates: Partial<Product>) => setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-  const deleteProduct = (id: string) => setProducts(prev => prev.filter(p => p.id !== id));
-  const addCategory = (category: Category) => setCategories(prev => [...prev, category]);
-  const updateCategory = (id: string, updates: Partial<Category>) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
-  const updateSettings = (updates: Partial<AppSettings>) => setSettings(prev => ({ ...prev, ...updates }));
-  const getProductsByCategory = (categoryId: string) => products.filter(p => p.categoryId === categoryId);
-  const getFeaturedProducts = () => products.filter(p => p.featured);
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  const addProduct = async (product: Omit<DbProduct, "id" | "created_at" | "updated_at">) => {
+    const created = await apiAddProduct(product);
+    setProducts(prev => [created, ...prev]);
+  };
+
+  const updateProduct = async (id: string, updates: Partial<DbProduct>) => {
+    const updated = await apiUpdateProduct(id, updates);
+    setProducts(prev => prev.map(p => p.id === id ? updated : p));
+  };
+
+  const deleteProduct = async (id: string) => {
+    await apiDeleteProduct(id);
+    setProducts(prev => prev.filter(p => p.id !== id));
+  };
+
+  const addCategory = async (category: Omit<DbCategory, "id" | "created_at" | "updated_at">) => {
+    const created = await apiAddCategory(category);
+    setCategories(prev => [...prev, created]);
+  };
+
+  const updateCategory = async (id: string, updates: Partial<DbCategory>) => {
+    const updated = await apiUpdateCategory(id, updates);
+    setCategories(prev => prev.map(c => c.id === id ? updated : c));
+  };
+
+  const updateSettings = async (updates: Partial<DbAppSettings>) => {
+    const merged = { ...updates, id: settings?.id } as Partial<DbAppSettings> & { id?: string };
+    const updated = await apiUpsertSettings(merged);
+    setSettings(updated);
+  };
 
   return (
-    <DataContext.Provider value={{ products, categories, settings, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, updateSettings, getProductsByCategory, getFeaturedProducts }}>
+    <DataContext.Provider value={{ products, categories, settings, loading, error, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, updateSettings, refetch: loadAll }}>
       {children}
     </DataContext.Provider>
   );

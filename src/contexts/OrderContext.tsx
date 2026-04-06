@@ -1,34 +1,59 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Order, OrderStatus, mockOrders } from "@/data/mockData";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import {
+  DbOrder, DbOrderItem,
+  getOrdersWithItems,
+  createOrderWithItems,
+  updateOrderStatus as apiUpdateStatus,
+  CreateOrderInput,
+} from "@/lib/supabase-api";
+
+export type OrderWithItems = DbOrder & { items: DbOrderItem[] };
 
 interface OrderContextType {
-  orders: Order[];
-  addOrder: (order: Order) => void;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-  getOrdersByUser: (userId: string) => Order[];
+  orders: OrderWithItems[];
+  loading: boolean;
+  error: string | null;
+  addOrder: (input: CreateOrderInput) => Promise<DbOrder>;
+  updateOrderStatus: (orderId: string, status: string) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
-const ORDERS_KEY = "bs_marble_orders";
 
 export const OrderProvider = ({ children }: { children: ReactNode }) => {
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const stored = localStorage.getItem(ORDERS_KEY);
-    return stored ? JSON.parse(stored) : mockOrders;
-  });
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-  }, [orders]);
+  const loadOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getOrdersWithItems();
+      setOrders(data);
+    } catch (err: any) {
+      console.error("OrderProvider load error:", err);
+      setError("Unable to load orders. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const addOrder = (order: Order) => setOrders(prev => [order, ...prev]);
-  const updateOrderStatus = (orderId: string, status: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+  useEffect(() => { loadOrders(); }, [loadOrders]);
+
+  const addOrder = async (input: CreateOrderInput): Promise<DbOrder> => {
+    const order = await createOrderWithItems(input);
+    await loadOrders(); // refetch to get items
+    return order;
   };
-  const getOrdersByUser = (userId: string) => orders.filter(o => o.userId === userId);
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    const updated = await apiUpdateStatus(orderId, status);
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updated } : o));
+  };
 
   return (
-    <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, getOrdersByUser }}>
+    <OrderContext.Provider value={{ orders, loading, error, addOrder, updateOrderStatus, refetch: loadOrders }}>
       {children}
     </OrderContext.Provider>
   );
