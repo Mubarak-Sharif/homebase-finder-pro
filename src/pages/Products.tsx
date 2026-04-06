@@ -7,30 +7,35 @@ import { useData } from "@/contexts/DataContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
-  const { products, categories } = useData();
+  const { products, categories, loading, error } = useData();
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get("category") || "all");
   const [colorFilter, setColorFilter] = useState("all");
   const [usageFilter, setUsageFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [query, setQuery] = useState(searchParams.get("q") || "");
 
-  const colors = useMemo(() => [...new Set(products.map(p => p.color))], [products]);
-  const usages = useMemo(() => [...new Set(products.flatMap(p => p.usage))], [products]);
+  const colors = useMemo(() => [...new Set(products.map(p => p.color).filter(Boolean) as string[])], [products]);
+  const usages = useMemo(() => [...new Set(products.map(p => p.usage).filter(Boolean) as string[])], [products]);
 
   const filtered = useMemo(() => {
     let result = [...products];
-    if (categoryFilter !== "all") result = result.filter(p => p.categoryId === categoryFilter);
+    if (categoryFilter !== "all") result = result.filter(p => p.category_id === categoryFilter);
     if (colorFilter !== "all") result = result.filter(p => p.color === colorFilter);
-    if (usageFilter !== "all") result = result.filter(p => p.usage.includes(usageFilter));
+    if (usageFilter !== "all") result = result.filter(p => p.usage === usageFilter);
     if (query) {
       const q = query.toLowerCase();
-      result = result.filter(p => p.name.toLowerCase().includes(q) || p.color.toLowerCase().includes(q) || p.origin.toLowerCase().includes(q));
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.color?.toLowerCase().includes(q)) ||
+        (p.origin?.toLowerCase().includes(q))
+      );
     }
-    if (sortBy === "price-asc") result.sort((a, b) => a.price - b.price);
-    else if (sortBy === "price-desc") result.sort((a, b) => b.price - a.price);
+    if (sortBy === "price-asc") result.sort((a, b) => Number(a.price_per_sqft) - Number(b.price_per_sqft));
+    else if (sortBy === "price-desc") result.sort((a, b) => Number(b.price_per_sqft) - Number(a.price_per_sqft));
     return result;
   }, [products, categoryFilter, colorFilter, usageFilter, sortBy, query]);
 
@@ -44,7 +49,8 @@ const Products = () => {
         <h1 className="font-heading text-3xl font-bold text-foreground mb-2">All Marble</h1>
         <p className="text-sm text-muted-foreground mb-6">Browse and filter our complete collection</p>
 
-        {/* Search + Filters */}
+        {error && <p className="text-destructive text-sm mb-4">{error}</p>}
+
         <div className="space-y-3 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -56,7 +62,7 @@ const Products = () => {
               <SelectTrigger className="w-[130px] h-9 text-xs bg-card"><SelectValue placeholder="Category" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.filter(c => c.active).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {categories.filter(c => c.is_active).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={colorFilter} onValueChange={setColorFilter}>
@@ -85,17 +91,24 @@ const Products = () => {
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground mb-4">{filtered.length} products found</p>
-
-        {filtered.length > 0 ? (
+        {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+            {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-[4/3] rounded-lg" />)}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">No products found.</p>
-            <Button variant="outline" onClick={clearFilters} className="mt-3">Clear Filters</Button>
-          </div>
+          <>
+            <p className="text-xs text-muted-foreground mb-4">{filtered.length} products found</p>
+            {filtered.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground">No products found.</p>
+                <Button variant="outline" onClick={clearFilters} className="mt-3">Clear Filters</Button>
+              </div>
+            )}
+          </>
         )}
       </div>
       <BottomNav />

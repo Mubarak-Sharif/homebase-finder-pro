@@ -14,7 +14,227 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          created_at: string
+          default_city: string
+          delivery_info: string | null
+          id: string
+          org_name: string
+          updated_at: string
+          whatsapp_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_city?: string
+          delivery_info?: string | null
+          id?: string
+          org_name?: string
+          updated_at?: string
+          whatsapp_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_city?: string
+          delivery_info?: string | null
+          id?: string
+          org_name?: string
+          updated_at?: string
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          id: string
+          line_total: number
+          order_id: string
+          price_per_sqft_snapshot: number
+          product_id: string
+          product_name_snapshot: string
+          quantity_sqft: number
+        }
+        Insert: {
+          id?: string
+          line_total: number
+          order_id: string
+          price_per_sqft_snapshot: number
+          product_id: string
+          product_name_snapshot: string
+          quantity_sqft: number
+        }
+        Update: {
+          id?: string
+          line_total?: number
+          order_id?: string
+          price_per_sqft_snapshot?: number
+          product_id?: string
+          product_name_snapshot?: string
+          quantity_sqft?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          city: string
+          created_at: string
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          customer_whatsapp: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          order_type: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          city?: string
+          created_at?: string
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          customer_whatsapp?: string | null
+          id?: string
+          notes?: string | null
+          order_number: string
+          order_type?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          customer_address?: string
+          customer_name?: string
+          customer_phone?: string
+          customer_whatsapp?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          order_type?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category_id: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          featured: boolean
+          finish: string | null
+          gallery_image_urls: string[] | null
+          id: string
+          name: string
+          origin: string | null
+          price_per_sqft: number
+          primary_image_url: string | null
+          stock_status: string
+          thickness_options: string[] | null
+          updated_at: string
+          usage: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          featured?: boolean
+          finish?: string | null
+          gallery_image_urls?: string[] | null
+          id?: string
+          name: string
+          origin?: string | null
+          price_per_sqft: number
+          primary_image_url?: string | null
+          stock_status?: string
+          thickness_options?: string[] | null
+          updated_at?: string
+          usage?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          featured?: boolean
+          finish?: string | null
+          gallery_image_urls?: string[] | null
+          id?: string
+          name?: string
+          origin?: string | null
+          price_per_sqft?: number
+          primary_image_url?: string | null
+          stock_status?: string
+          thickness_options?: string[] | null
+          updated_at?: string
+          usage?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

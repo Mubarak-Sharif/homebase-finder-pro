@@ -15,7 +15,7 @@ const Calculator = () => {
 
   const area = (Number(length) || 0) * (Number(width) || 0) * (Number(rooms) || 1);
   const selectedProduct = products.find(p => p.id === productId);
-  const cost = selectedProduct ? area * selectedProduct.price : 0;
+  const cost = selectedProduct ? area * Number(selectedProduct.price_per_sqft) : 0;
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -53,7 +53,7 @@ const Calculator = () => {
               <SelectContent>
                 <SelectItem value="none">No marble selected</SelectItem>
                 {products.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.name} - Rs.{p.price}/sqft</SelectItem>
+                  <SelectItem key={p.id} value={p.id}>{p.name} - Rs.{Number(p.price_per_sqft)}/sqft</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -69,7 +69,7 @@ const Calculator = () => {
               <>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Price/sqft</span>
-                  <span className="text-foreground">Rs. {selectedProduct.price.toLocaleString()}</span>
+                  <span className="text-foreground">Rs. {Number(selectedProduct.price_per_sqft).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between border-t border-border pt-2">
                   <span className="text-foreground font-semibold">Estimated Cost</span>
