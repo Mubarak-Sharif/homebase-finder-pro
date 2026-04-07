@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ShoppingCart, MessageCircle, Star } from "lucide-react";
+import { ArrowLeft, ShoppingCart, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ProductReviews from "@/components/ProductReviews";
 import { Badge } from "@/components/ui/badge";
 import TopBar from "@/components/TopBar";
 import BottomNav from "@/components/BottomNav";
@@ -145,6 +146,11 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Reviews */}
+        <div className="mt-12">
+          <ProductReviews productId={product.id} />
+        </div>
       </div>
       <BottomNav />
     </div>
