@@ -1,16 +1,15 @@
-import { UserRole } from "@/data/mockData";
+import { UserRole } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Shield, ShieldCheck, User, Crown } from "lucide-react";
 
-const roleConfig: Record<UserRole, { label: string; icon: React.ElementType; className: string }> = {
-  COMMISSIONER_PA_ADMIN: { label: "Commissioner PA", icon: Crown, className: "bg-primary/20 text-primary border-primary/30" },
-  ADMIN: { label: "Admin", icon: ShieldCheck, className: "bg-primary/15 text-primary border-primary/25" },
-  MANAGER: { label: "Manager", icon: Shield, className: "bg-secondary text-secondary-foreground border-border" },
-  CUSTOMER: { label: "Customer", icon: User, className: "bg-secondary text-secondary-foreground border-border" },
+const roleConfig: Record<string, { label: string; icon: React.ElementType; className: string }> = {
+  admin: { label: "Admin", icon: ShieldCheck, className: "bg-primary/15 text-primary border-primary/25" },
+  manager: { label: "Manager", icon: Shield, className: "bg-secondary text-secondary-foreground border-border" },
+  customer: { label: "Customer", icon: User, className: "bg-secondary text-secondary-foreground border-border" },
 };
 
-const RoleBadge = ({ role }: { role: UserRole }) => {
-  const config = roleConfig[role];
+const RoleBadge = ({ role }: { role: string }) => {
+  const config = roleConfig[role] || roleConfig.customer;
   const Icon = config.icon;
   return (
     <Badge variant="outline" className={`gap-1 ${config.className}`}>

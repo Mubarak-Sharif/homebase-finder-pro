@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -11,14 +11,17 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
-    const result = register(name, email, phone, password);
+    setLoading(true);
+    const result = await register(name, email, phone, password);
+    setLoading(false);
     if (result.success) navigate("/");
     else setError(result.message);
   };
@@ -60,7 +63,9 @@ const Register = () => {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" className="w-full gold-gradient text-primary-foreground font-semibold">Sign Up</Button>
+          <Button type="submit" className="w-full gold-gradient text-primary-foreground font-semibold" disabled={loading}>
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Creating Account...</> : "Sign Up"}
+          </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">

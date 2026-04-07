@@ -1,16 +1,10 @@
 /**
  * Supabase API helper layer for BS Marble Karachi.
- * Centralizes all DB operations so UI components don't contain raw query logic.
- *
- * TODO: When real auth is added:
- *   - Add user_id to orders for per-user visibility
- *   - Restrict category/product writes to admin roles
- *   - Use auth.uid() in RLS policies
  */
 
 import { supabase } from "@/integrations/supabase/client";
 
-// ============ TYPES (matching Supabase schema) ============
+// ============ TYPES ============
 
 export interface DbCategory {
   id: string;
@@ -54,6 +48,7 @@ export interface DbOrder {
   status: string;
   notes: string | null;
   total_amount: number;
+  user_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -76,6 +71,16 @@ export interface DbAppSettings {
   delivery_info: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface DbReview {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reviewer_name?: string;
 }
 
 // ============ CATEGORIES ============
@@ -178,6 +183,7 @@ export interface CreateOrderInput {
   order_type?: string;
   notes?: string;
   total_amount: number;
+  user_id?: string;
   items: {
     product_id: string;
     product_name_snapshot: string;
@@ -209,6 +215,42 @@ export async function updateOrderStatus(id: string, status: string): Promise<DbO
   return data;
 }
 
+// ============ REVIEWS ============
+
+export async function getReviewsByProduct(productId: string): Promise<DbReview[]> {
+  // Get reviews
+  const { data: reviews, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false });
+  if (error) { console.error("getReviews error:", error); throw error; }
+  if (!reviews || reviews.length === 0) return [];
+
+  // Get reviewer names
+  const userIds = [...new Set(reviews.map(r => r.user_id))];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", userIds);
+
+  const nameMap: Record<string, string> = {};
+  (profiles || []).forEach(p => { nameMap[p.id] = p.full_name || "Anonymous"; });
+
+  return reviews.map(r => ({ ...r, reviewer_name: nameMap[r.user_id] || "Anonymous" }));
+}
+
+export async function addReview(review: { product_id: string; user_id: string; rating: number; comment?: string }): Promise<DbReview> {
+  const { data, error } = await supabase.from("reviews").insert(review).select().single();
+  if (error) { console.error("addReview error:", error); throw error; }
+  return data;
+}
+
+export async function deleteReview(id: string): Promise<void> {
+  const { error } = await supabase.from("reviews").delete().eq("id", id);
+  if (error) { console.error("deleteReview error:", error); throw error; }
+}
+
 // ============ APP SETTINGS ============
 
 export async function getAppSettings(): Promise<DbAppSettings | null> {
@@ -228,7 +270,7 @@ export async function upsertAppSettings(settings: Partial<DbAppSettings> & { id?
   return data;
 }
 
-// ============ HELPER: Generate Order Number ============
+// ============ HELPER ============
 export function generateOrderNumber(): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10).replace(/-/g, "");

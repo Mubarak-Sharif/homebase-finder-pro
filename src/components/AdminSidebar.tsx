@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, Grid3X3, ClipboardList, Users, Settings, Crown, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Package, Grid3X3, ClipboardList, Users, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import RoleBadge from "@/components/RoleBadge";
 import { useState } from "react";
 
 const AdminSidebar = () => {
-  const { currentUser, isRole, logout } = useAuth();
+  const { profile, isRole, logout } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -14,8 +14,7 @@ const AdminSidebar = () => {
     { path: "/admin/products", icon: Package, label: "Products", show: true },
     { path: "/admin/categories", icon: Grid3X3, label: "Categories", show: true },
     { path: "/admin/orders", icon: ClipboardList, label: "Orders", show: true },
-    { path: "/admin/users", icon: Users, label: "Users", show: isRole("ADMIN", "COMMISSIONER_PA_ADMIN") },
-    { path: "/admin/commissioner", icon: Crown, label: "Commissioner Panel", show: isRole("COMMISSIONER_PA_ADMIN") },
+    { path: "/admin/users", icon: Users, label: "Users", show: isRole("admin") },
     { path: "/admin/settings", icon: Settings, label: "Settings", show: true },
   ].filter(i => i.show);
 
@@ -33,10 +32,10 @@ const AdminSidebar = () => {
         </button>
       </div>
 
-      {!collapsed && currentUser && (
+      {!collapsed && profile && (
         <div className="p-4 border-b border-border">
-          <p className="text-sm font-medium text-foreground truncate">{currentUser.name}</p>
-          <div className="mt-1"><RoleBadge role={currentUser.role} /></div>
+          <p className="text-sm font-medium text-foreground truncate">{profile.full_name || "User"}</p>
+          <div className="mt-1"><RoleBadge role={profile.role} /></div>
         </div>
       )}
 
@@ -56,7 +55,7 @@ const AdminSidebar = () => {
       </nav>
 
       <div className="p-3 border-t border-border space-y-2">
-        <Link to="/" className={`flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-secondary`}>
+        <Link to="/" className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-secondary">
           <Package className="w-4 h-4" />
           {!collapsed && <span>View Store</span>}
         </Link>

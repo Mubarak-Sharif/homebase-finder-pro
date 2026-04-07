@@ -1,13 +1,11 @@
 import AdminSidebar from "@/components/AdminSidebar";
 import { useOrders } from "@/contexts/OrderContext";
 import { useData } from "@/contexts/DataContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { Crown, TrendingUp, ClipboardList, Package, Users, Loader2 } from "lucide-react";
+import { Crown, TrendingUp, ClipboardList, Package, Loader2 } from "lucide-react";
 
 const CommissionerPanel = () => {
   const { orders, loading: ordersLoading } = useOrders();
   const { products, categories, loading: dataLoading } = useData();
-  const { users } = useAuth();
 
   const totalSales = orders.filter(o => o.status === "DELIVERED").reduce((s, o) => s + Number(o.total_amount), 0);
   const totalOrders = orders.length;
@@ -32,14 +30,14 @@ const CommissionerPanel = () => {
       <main className="flex-1 p-4 md:p-6 overflow-auto">
         <div className="flex items-center gap-3 mb-6">
           <Crown className="w-7 h-7 text-primary" />
-          <h1 className="font-heading text-3xl font-bold text-foreground">Commissioner Panel</h1>
+          <h1 className="font-heading text-3xl font-bold text-foreground">Admin Overview</h1>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               <div className="bg-card border border-border rounded-lg p-4">
                 <TrendingUp className="w-5 h-5 text-primary mb-2" />
                 <p className="text-2xl font-bold text-foreground">Rs. {totalSales.toLocaleString()}</p>
@@ -54,11 +52,6 @@ const CommissionerPanel = () => {
                 <Package className="w-5 h-5 text-green-400 mb-2" />
                 <p className="text-2xl font-bold text-foreground">{products.length}</p>
                 <p className="text-xs text-muted-foreground">Total Products</p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-4">
-                <Users className="w-5 h-5 text-purple-400 mb-2" />
-                <p className="text-2xl font-bold text-foreground">{users.length}</p>
-                <p className="text-xs text-muted-foreground">Total Users</p>
               </div>
             </div>
 
@@ -80,21 +73,6 @@ const CommissionerPanel = () => {
                     ))}
                   </div>
                 )}
-              </div>
-
-              <div className="bg-card border border-border rounded-lg p-4">
-                <h3 className="font-heading text-lg font-semibold text-foreground mb-4">Users & Roles Overview</h3>
-                <div className="space-y-2">
-                  {["COMMISSIONER_PA_ADMIN", "ADMIN", "MANAGER", "CUSTOMER"].map(role => {
-                    const count = users.filter(u => u.role === role).length;
-                    return (
-                      <div key={role} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{role.replace(/_/g, " ")}</span>
-                        <span className="text-foreground font-medium">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
 
               <div className="bg-card border border-border rounded-lg p-4">

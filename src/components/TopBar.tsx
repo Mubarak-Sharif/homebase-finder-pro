@@ -4,15 +4,14 @@ import { useCart } from "@/contexts/CartContext";
 import { ShoppingCart, User, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import RoleBadge from "@/components/RoleBadge";
 import { useState } from "react";
-import RoleSwitcher from "@/components/RoleSwitcher";
 
 const TopBar = () => {
-  const { currentUser, isAuthenticated, isRole, logout } = useAuth();
+  const { profile, isAuthenticated, isRole, logout } = useAuth();
   const { getItemCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = getItemCount();
 
-  const isAdmin = isRole("ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN");
+  const isAdmin = isRole("admin", "manager");
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
@@ -22,7 +21,6 @@ const TopBar = () => {
           <span className="hidden sm:inline text-xs text-muted-foreground">Karachi</span>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Home</Link>
           <Link to="/categories" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Categories</Link>
@@ -31,7 +29,6 @@ const TopBar = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <RoleSwitcher />
           <Link to="/cart" className="relative hidden md:block">
             <ShoppingCart className="w-5 h-5 text-muted-foreground hover:text-foreground" />
             {cartCount > 0 && (
@@ -62,17 +59,16 @@ const TopBar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-card border-t border-border py-4 px-4 space-y-3 animate-fade-in">
-          {isAuthenticated && currentUser && (
+          {isAuthenticated && profile && (
             <div className="flex items-center gap-2 pb-3 border-b border-border">
               <div className="w-8 h-8 rounded-full gold-gradient flex items-center justify-center text-primary-foreground font-bold text-sm">
-                {currentUser.name[0]}
+                {(profile.full_name || "U")[0]}
               </div>
               <div>
-                <p className="text-sm font-medium">{currentUser.name}</p>
-                <RoleBadge role={currentUser.role} />
+                <p className="text-sm font-medium">{profile.full_name || "User"}</p>
+                <RoleBadge role={profile.role} />
               </div>
             </div>
           )}
