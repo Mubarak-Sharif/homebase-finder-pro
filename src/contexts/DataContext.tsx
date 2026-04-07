@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DbCategory, DbProduct, DbAppSettings,
   getCategories as fetchCategories,
@@ -53,6 +54,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Real-time subscriptions for products
+  useEffect(() => {
+    const channel = supabase
+      .channel("data-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => { loadAll(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => { loadAll(); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [loadAll]);
 
   const addProduct = async (product: Omit<DbProduct, "id" | "created_at" | "updated_at">) => {
     const created = await apiAddProduct(product);
