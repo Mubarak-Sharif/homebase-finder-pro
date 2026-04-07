@@ -5,15 +5,22 @@ import TopBar from "@/components/TopBar";
 import BottomNav from "@/components/BottomNav";
 import RoleBadge from "@/components/RoleBadge";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Edit } from "lucide-react";
+import { LogOut, Edit, Loader2 } from "lucide-react";
 
 const Profile = () => {
-  const { currentUser, isAuthenticated, logout, updateUser } = useAuth();
+  const { profile, user, isAuthenticated, logout, updateProfile, loading } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(currentUser?.name || "");
-  const [phone, setPhone] = useState(currentUser?.phone || "");
+  const [name, setName] = useState(profile?.full_name || "");
+  const [phone, setPhone] = useState(profile?.phone || "");
+  const [saving, setSaving] = useState(false);
 
-  if (!isAuthenticated || !currentUser) return (
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  );
+
+  if (!isAuthenticated || !profile) return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <TopBar />
       <div className="flex flex-col items-center justify-center py-20 px-4">
@@ -24,9 +31,16 @@ const Profile = () => {
     </div>
   );
 
-  const handleSave = () => {
-    updateUser(currentUser.id, { name, phone });
-    setEditing(false);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateProfile({ full_name: name, phone });
+      setEditing(false);
+    } catch (err) {
+      console.error("Save profile error:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -38,11 +52,11 @@ const Profile = () => {
         <div className="bg-card border border-border rounded-lg p-6 space-y-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full gold-gradient flex items-center justify-center text-primary-foreground font-heading text-2xl font-bold">
-              {currentUser.name[0]}
+              {(profile.full_name || "U")[0]}
             </div>
             <div>
-              <p className="font-heading text-xl font-semibold text-foreground">{currentUser.name}</p>
-              <RoleBadge role={currentUser.role} />
+              <p className="font-heading text-xl font-semibold text-foreground">{profile.full_name || "User"}</p>
+              <RoleBadge role={profile.role} />
             </div>
           </div>
 
@@ -59,16 +73,18 @@ const Profile = () => {
                   className="w-full mt-1 px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30" />
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleSave} className="gold-gradient text-primary-foreground">Save</Button>
+                <Button onClick={handleSave} className="gold-gradient text-primary-foreground" disabled={saving}>
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+                </Button>
                 <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
               </div>
             </div>
           ) : (
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="text-foreground">{currentUser.email}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-foreground">{currentUser.phone}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Role</span><span className="text-foreground capitalize">{currentUser.role.replace(/_/g, " ").toLowerCase()}</span></div>
-              <Button variant="outline" onClick={() => setEditing(true)} className="w-full gap-2 mt-2"><Edit className="w-4 h-4" />Edit Profile</Button>
+              <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="text-foreground">{user?.email}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-foreground">{profile.phone || "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Role</span><span className="text-foreground capitalize">{profile.role}</span></div>
+              <Button variant="outline" onClick={() => { setName(profile.full_name || ""); setPhone(profile.phone || ""); setEditing(true); }} className="w-full gap-2 mt-2"><Edit className="w-4 h-4" />Edit Profile</Button>
             </div>
           )}
 

@@ -2,22 +2,25 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
-  const { login, isAuthenticated, currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const message = (location.state as any)?.message;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const result = login(email, password);
+    setLoading(true);
+    const result = await login(email, password);
+    setLoading(false);
     if (result.success) {
       navigate("/");
     } else {
@@ -61,20 +64,14 @@ const Login = () => {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" className="w-full gold-gradient text-primary-foreground font-semibold">Login</Button>
+          <Button type="submit" className="w-full gold-gradient text-primary-foreground font-semibold" disabled={loading}>
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Logging in...</> : "Login"}
+          </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
           Don't have an account? <Link to="/register" className="text-primary hover:underline">Sign up</Link>
         </p>
-
-        <div className="bg-secondary/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-          <p className="font-medium text-foreground">Demo Accounts:</p>
-          <p>Commissioner: commissioner@bsmarble.pk / admin123</p>
-          <p>Admin: admin@bsmarble.pk / admin123</p>
-          <p>Manager: manager@bsmarble.pk / manager123</p>
-          <p>Customer: ali@gmail.com / customer123</p>
-        </div>
       </div>
     </div>
   );

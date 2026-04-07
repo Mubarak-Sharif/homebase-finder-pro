@@ -17,14 +17,14 @@ const areas = ["Gulshan-e-Iqbal", "DHA", "Clifton", "North Nazimabad", "Korangi"
 const Checkout = () => {
   const { cart, clearCart } = useCart();
   const { products, settings } = useData();
-  const { currentUser } = useAuth();
+  const { user, profile } = useAuth();
   const { addOrder } = useOrders();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [name, setName] = useState(currentUser?.name || "");
-  const [phone, setPhone] = useState(currentUser?.phone || "");
-  const [whatsapp, setWhatsapp] = useState(currentUser?.phone || "");
+  const [name, setName] = useState(profile?.full_name || "");
+  const [phone, setPhone] = useState(profile?.phone || "");
+  const [whatsapp, setWhatsapp] = useState(profile?.phone || "");
   const [area, setArea] = useState("");
   const [address, setAddress] = useState("");
   const [orderType, setOrderType] = useState<"STANDARD" | "BULK">("STANDARD");
@@ -54,6 +54,7 @@ const Checkout = () => {
         order_type: orderType,
         notes: notes || undefined,
         total_amount: total,
+        user_id: user?.id,
         items: items.map(i => ({
           product_id: i.productId,
           product_name_snapshot: i.name,

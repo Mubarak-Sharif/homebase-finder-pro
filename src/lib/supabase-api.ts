@@ -1,11 +1,6 @@
 /**
  * Supabase API helper layer for BS Marble Karachi.
  * Centralizes all DB operations so UI components don't contain raw query logic.
- *
- * TODO: When real auth is added:
- *   - Add user_id to orders for per-user visibility
- *   - Restrict category/product writes to admin roles
- *   - Use auth.uid() in RLS policies
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -54,6 +49,7 @@ export interface DbOrder {
   status: string;
   notes: string | null;
   total_amount: number;
+  user_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -76,6 +72,17 @@ export interface DbAppSettings {
   delivery_info: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface DbReview {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  // Joined
+  profiles?: { full_name: string | null } | null;
 }
 
 // ============ CATEGORIES ============
@@ -178,6 +185,7 @@ export interface CreateOrderInput {
   order_type?: string;
   notes?: string;
   total_amount: number;
+  user_id?: string;
   items: {
     product_id: string;
     product_name_snapshot: string;
@@ -207,6 +215,29 @@ export async function updateOrderStatus(id: string, status: string): Promise<DbO
   const { data, error } = await supabase.from("orders").update({ status }).eq("id", id).select().single();
   if (error) { console.error("updateOrderStatus error:", error); throw error; }
   return data;
+}
+
+// ============ REVIEWS ============
+
+export async function getReviewsByProduct(productId: string): Promise<DbReview[]> {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*, profiles(full_name)")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false });
+  if (error) { console.error("getReviews error:", error); throw error; }
+  return data ?? [];
+}
+
+export async function addReview(review: { product_id: string; user_id: string; rating: number; comment?: string }): Promise<DbReview> {
+  const { data, error } = await supabase.from("reviews").insert(review).select("*, profiles(full_name)").single();
+  if (error) { console.error("addReview error:", error); throw error; }
+  return data;
+}
+
+export async function deleteReview(id: string): Promise<void> {
+  const { error } = await supabase.from("reviews").delete().eq("id", id);
+  if (error) { console.error("deleteReview error:", error); throw error; }
 }
 
 // ============ APP SETTINGS ============
