@@ -103,9 +103,9 @@ const ProductReviews = ({ productId }: { productId: string }) => {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-foreground">
-                    {(r.profiles?.full_name || "U")[0]}
+                    {(r.reviewer_name || "U")[0]}
                   </div>
-                  <span className="text-sm font-medium text-foreground">{r.profiles?.full_name || "Anonymous"}</span>
+                  <span className="text-sm font-medium text-foreground">{r.reviewer_name || "Anonymous"}</span>
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map(s => (
                       <Star key={s} className={`w-3 h-3 ${s <= r.rating ? "fill-primary text-primary" : "text-muted-foreground/30"}`} />

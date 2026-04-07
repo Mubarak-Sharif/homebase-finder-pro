@@ -25,7 +25,6 @@ import AdminProducts from "./pages/admin/Products";
 import AdminCategories from "./pages/admin/Categories";
 import AdminOrders from "./pages/admin/Orders";
 import AdminUsers from "./pages/admin/Users";
-import CommissionerPanel from "./pages/admin/CommissionerPanel";
 import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -53,13 +52,12 @@ const App = () => (
                   <Route path="/orders" element={<MyOrders />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/calculator" element={<Calculator />} />
-                  <Route path="/admin" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/products" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminProducts /></ProtectedRoute>} />
-                  <Route path="/admin/categories" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminCategories /></ProtectedRoute>} />
-                  <Route path="/admin/orders" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminOrders /></ProtectedRoute>} />
-                  <Route path="/admin/users" element={<ProtectedRoute roles={["ADMIN", "COMMISSIONER_PA_ADMIN"]}><AdminUsers /></ProtectedRoute>} />
-                  <Route path="/admin/commissioner" element={<ProtectedRoute roles={["COMMISSIONER_PA_ADMIN"]}><CommissionerPanel /></ProtectedRoute>} />
-                  <Route path="/admin/settings" element={<ProtectedRoute roles={["ADMIN", "MANAGER", "COMMISSIONER_PA_ADMIN"]}><AdminSettings /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute roles={["admin", "manager"]}><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/products" element={<ProtectedRoute roles={["admin", "manager"]}><AdminProducts /></ProtectedRoute>} />
+                  <Route path="/admin/categories" element={<ProtectedRoute roles={["admin", "manager"]}><AdminCategories /></ProtectedRoute>} />
+                  <Route path="/admin/orders" element={<ProtectedRoute roles={["admin", "manager"]}><AdminOrders /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute roles={["admin"]}><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/settings" element={<ProtectedRoute roles={["admin", "manager"]}><AdminSettings /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
