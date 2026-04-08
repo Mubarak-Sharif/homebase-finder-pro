@@ -4,6 +4,7 @@ import {
   getOrdersWithItems,
   createOrderWithItems,
   updateOrderStatus as apiUpdateStatus,
+  deleteOrder as apiDeleteOrder,
   CreateOrderInput,
 } from "@/lib/supabase-api";
 
@@ -15,6 +16,7 @@ interface OrderContextType {
   error: string | null;
   addOrder: (input: CreateOrderInput) => Promise<DbOrder>;
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
+  deleteOrder: (orderId: string) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -43,7 +45,7 @@ export const OrderProvider = ({ children }: { children: ReactNode }) => {
 
   const addOrder = async (input: CreateOrderInput): Promise<DbOrder> => {
     const order = await createOrderWithItems(input);
-    await loadOrders(); // refetch to get items
+    await loadOrders();
     return order;
   };
 
@@ -52,8 +54,13 @@ export const OrderProvider = ({ children }: { children: ReactNode }) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updated } : o));
   };
 
+  const deleteOrder = async (orderId: string) => {
+    await apiDeleteOrder(orderId);
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+  };
+
   return (
-    <OrderContext.Provider value={{ orders, loading, error, addOrder, updateOrderStatus, refetch: loadOrders }}>
+    <OrderContext.Provider value={{ orders, loading, error, addOrder, updateOrderStatus, deleteOrder, refetch: loadOrders }}>
       {children}
     </OrderContext.Provider>
   );
