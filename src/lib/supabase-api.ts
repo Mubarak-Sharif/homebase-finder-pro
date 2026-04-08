@@ -141,6 +141,19 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) { console.error("deleteProduct error:", error); throw error; }
 }
 
+export async function deleteCategory(id: string): Promise<void> {
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) { console.error("deleteCategory error:", error); throw error; }
+}
+
+export async function deleteOrder(id: string): Promise<void> {
+  // Delete order items first, then the order
+  const { error: itemsErr } = await supabase.from("order_items").delete().eq("order_id", id);
+  if (itemsErr) { console.error("deleteOrderItems error:", itemsErr); throw itemsErr; }
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+  if (error) { console.error("deleteOrder error:", error); throw error; }
+}
+
 // ============ ORDERS ============
 
 export async function getOrders(): Promise<DbOrder[]> {
