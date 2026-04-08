@@ -92,6 +92,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setCategories(prev => prev.map(c => c.id === id ? updated : c));
   };
 
+  const deleteCategory = async (id: string) => {
+    await apiDeleteCategory(id);
+    setCategories(prev => prev.filter(c => c.id !== id));
+  };
+
   const updateSettings = async (updates: Partial<DbAppSettings>) => {
     const merged = { ...updates, id: settings?.id } as Partial<DbAppSettings> & { id?: string };
     const updated = await apiUpsertSettings(merged);
@@ -99,7 +104,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <DataContext.Provider value={{ products, categories, settings, loading, error, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, updateSettings, refetch: loadAll }}>
+    <DataContext.Provider value={{ products, categories, settings, loading, error, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, updateSettings, refetch: loadAll }}>
       {children}
     </DataContext.Provider>
   );
