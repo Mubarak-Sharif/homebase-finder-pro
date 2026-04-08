@@ -7,6 +7,7 @@ import {
   getAppSettings as fetchSettings,
   addCategory as apiAddCategory,
   updateCategory as apiUpdateCategory,
+  deleteCategory as apiDeleteCategory,
   addProduct as apiAddProduct,
   updateProduct as apiUpdateProduct,
   deleteProduct as apiDeleteProduct,
@@ -24,6 +25,7 @@ interface DataContextType {
   deleteProduct: (id: string) => Promise<void>;
   addCategory: (category: Omit<DbCategory, "id" | "created_at" | "updated_at">) => Promise<void>;
   updateCategory: (id: string, updates: Partial<DbCategory>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   updateSettings: (updates: Partial<DbAppSettings>) => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -90,6 +92,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setCategories(prev => prev.map(c => c.id === id ? updated : c));
   };
 
+  const deleteCategory = async (id: string) => {
+    await apiDeleteCategory(id);
+    setCategories(prev => prev.filter(c => c.id !== id));
+  };
+
   const updateSettings = async (updates: Partial<DbAppSettings>) => {
     const merged = { ...updates, id: settings?.id } as Partial<DbAppSettings> & { id?: string };
     const updated = await apiUpsertSettings(merged);
@@ -97,7 +104,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <DataContext.Provider value={{ products, categories, settings, loading, error, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, updateSettings, refetch: loadAll }}>
+    <DataContext.Provider value={{ products, categories, settings, loading, error, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, updateSettings, refetch: loadAll }}>
       {children}
     </DataContext.Provider>
   );

@@ -124,7 +124,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update(updates).eq("id", user.id);
+    const { email, ...dbUpdates } = updates as any;
+    const { error } = await supabase.from("profiles").update(dbUpdates).eq("id", user.id);
     if (error) { console.error("updateProfile error:", error); throw error; }
     setProfile(prev => prev ? { ...prev, ...updates } : null);
   };
