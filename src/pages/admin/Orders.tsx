@@ -1,9 +1,10 @@
 import AdminSidebar from "@/components/AdminSidebar";
 import { useOrders } from "@/contexts/OrderContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const statusColors: Record<string, string> = {
@@ -17,7 +18,8 @@ const statusColors: Record<string, string> = {
 const statuses = ["PENDING", "CONFIRMED", "PROCESSING", "DELIVERED", "CANCELLED"];
 
 const AdminOrders = () => {
-  const { orders, updateOrderStatus, loading } = useOrders();
+  const { orders, updateOrderStatus, deleteOrder, loading } = useOrders();
+  const { isRole } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -62,6 +64,7 @@ const AdminOrders = () => {
                   <th className="text-left p-3 text-muted-foreground font-medium">Total</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Status</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Update</th>
+                  {isRole("admin") && <th className="text-left p-3 text-muted-foreground font-medium">Delete</th>}
                 </tr>
               </thead>
               <tbody>
@@ -82,6 +85,11 @@ const AdminOrders = () => {
                           <SelectContent>{statuses.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent>
                         </Select>
                       </td>
+                      {isRole("admin") && (
+                        <td className="p-3" onClick={e => e.stopPropagation()}>
+                          <button onClick={async () => { if (confirm("Delete this order?")) { try { await deleteOrder(o.id); toast({ title: "Order deleted" }); } catch { toast({ title: "Error", description: "Failed to delete order.", variant: "destructive" }); } } }} className="p-1.5 rounded hover:bg-destructive/20 text-destructive"><Trash2 className="w-4 h-4" /></button>
+                        </td>
+                      )}
                     </tr>
                     {expanded === o.id && (
                       <tr>

@@ -2,11 +2,13 @@ import { useState } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import { useData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, X, EyeOff, Eye, Loader2 } from "lucide-react";
+import { Plus, Edit, X, EyeOff, Eye, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminCategories = () => {
-  const { categories, addCategory, updateCategory, loading } = useData();
+  const { categories, addCategory, updateCategory, deleteCategory, loading } = useData();
+  const { isRole } = useAuth();
   const { toast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,6 +80,9 @@ const AdminCategories = () => {
                     <button onClick={() => toggleActive(cat)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground">
                       {cat.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
+                    {isRole("admin") && (
+                      <button onClick={async () => { if (confirm("Delete this category?")) { try { await deleteCategory(cat.id); toast({ title: "Category deleted" }); } catch { toast({ title: "Error", description: "Failed to delete.", variant: "destructive" }); } } }} className="p-1.5 rounded hover:bg-destructive/20 text-destructive"><Trash2 className="w-4 h-4" /></button>
+                    )}
                   </div>
                 </div>
               </div>
