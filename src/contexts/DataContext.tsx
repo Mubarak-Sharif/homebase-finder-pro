@@ -62,6 +62,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const channel = supabase
       .channel("data-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => { loadAll(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, () => { loadAll(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => { loadAll(); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
