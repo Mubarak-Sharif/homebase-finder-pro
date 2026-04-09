@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { ShoppingCart, User, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import RoleBadge from "@/components/RoleBadge";
+import NotificationBell from "@/components/NotificationBell";
 import { useState } from "react";
 
 const TopBar = () => {
@@ -14,7 +15,7 @@ const TopBar = () => {
   const isAdmin = isRole("admin", "manager");
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-14 px-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="font-heading text-xl font-bold gold-text">BS Marble</span>
@@ -29,8 +30,10 @@ const TopBar = () => {
         </nav>
 
         <div className="flex items-center gap-3">
+          <NotificationBell />
+          
           <Link to="/cart" className="relative hidden md:block">
-            <ShoppingCart className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+            <ShoppingCart className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
             {cartCount > 0 && (
               <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full gold-gradient text-[10px] font-bold flex items-center justify-center text-primary-foreground">{cartCount}</span>
             )}
@@ -43,7 +46,7 @@ const TopBar = () => {
                   <LayoutDashboard className="w-3 h-3" /> Dashboard
                 </Link>
               )}
-              <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground">
+              <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">
                 <User className="w-5 h-5" />
               </Link>
             </div>

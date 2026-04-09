@@ -16,21 +16,22 @@ const BottomNav = () => {
   const cartCount = getItemCount();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border md:hidden">
       <div className="flex items-center justify-around h-16">
         {tabs.map(({ path, icon: Icon, label }) => {
           const active = path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
           return (
-            <Link key={path} to={path} className="flex flex-col items-center gap-0.5 relative">
+            <Link key={path} to={path} className="flex flex-col items-center gap-0.5 relative group">
               <div className="relative">
-                <Icon className={`w-5 h-5 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                <Icon className={`w-5 h-5 transition-colors ${active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
                 {label === "Cart" && cartCount > 0 && (
                   <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full gold-gradient text-[10px] font-bold flex items-center justify-center text-primary-foreground">
                     {cartCount}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] ${active ? "text-primary font-medium" : "text-muted-foreground"}`}>{label}</span>
+              <span className={`text-[10px] transition-colors ${active ? "text-primary font-semibold" : "text-muted-foreground"}`}>{label}</span>
+              {active && <div className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full gold-gradient" />}
             </Link>
           );
         })}
