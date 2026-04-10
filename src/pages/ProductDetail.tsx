@@ -11,6 +11,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { productImageMap } from "@/assets/marbles";
 
 const stockColors: Record<string, string> = { IN_STOCK: "text-green-400", LIMITED: "text-yellow-400", OUT_OF_STOCK: "text-red-400" };
 const stockLabels: Record<string, string> = { IN_STOCK: "In Stock", LIMITED: "Limited Stock", OUT_OF_STOCK: "Out of Stock" };
@@ -47,7 +48,8 @@ const ProductDetail = () => {
   );
 
   const category = categories.find(c => c.id === product.category_id);
-  const allImages = [product.primary_image_url, ...(product.gallery_image_urls || [])].filter(Boolean) as string[];
+  const localImg = productImageMap[product.name];
+  const allImages = [localImg, product.primary_image_url, ...(product.gallery_image_urls || [])].filter(Boolean) as string[];
   const images = allImages.length > 0 ? allImages : ["/placeholder.svg"];
   const similar = products.filter(p => p.id !== product.id && p.category_id === product.category_id).slice(0, 4);
   const price = Number(product.price_per_sqft);
