@@ -80,7 +80,7 @@ const AdminCategories = () => {
                     <button onClick={() => toggleActive(cat)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground">
                       {cat.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                    {isRole("admin") && (
+                    {isRole("ADMIN") && (
                       <button onClick={async () => { if (confirm("Delete this category?")) { try { await deleteCategory(cat.id); toast({ title: "Category deleted" }); } catch { toast({ title: "Error", description: "Failed to delete.", variant: "destructive" }); } } }} className="p-1.5 rounded hover:bg-destructive/20 text-destructive"><Trash2 className="w-4 h-4" /></button>
                     )}
                   </div>

@@ -12,7 +12,7 @@ const TopBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = getItemCount();
 
-  const isAdminOrUser = isRole("ADMIN", "USER");
+  const isAdminOrUserOrUser = isRole("ADMIN", "USER");
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
@@ -41,7 +41,7 @@ const TopBar = () => {
 
           {isAuthenticated ? (
             <div className="hidden md:flex items-center gap-2">
-              {isAdmin && (
+              {isAdminOrUser && (
                 <Link to="/admin" className="text-xs text-primary hover:underline flex items-center gap-1">
                   <LayoutDashboard className="w-3 h-3" /> Dashboard
                 </Link>
@@ -79,7 +79,7 @@ const TopBar = () => {
           <Link to="/categories" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground py-2">Categories</Link>
           <Link to="/products" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground py-2">Products</Link>
           <Link to="/calculator" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground py-2">Calculator</Link>
-          {isAdmin && (
+          {isAdminOrUser && (
             <Link to="/admin" onClick={() => setMenuOpen(false)} className="block text-sm text-primary py-2 font-medium">Admin Dashboard</Link>
           )}
           {isAuthenticated ? (
