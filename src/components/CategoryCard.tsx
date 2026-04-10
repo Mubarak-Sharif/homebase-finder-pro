@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { DbCategory } from "@/lib/supabase-api";
 import FallbackImage from "@/components/FallbackImage";
+import { categoryImageMap } from "@/assets/marbles";
 
 const CategoryCard = ({ category }: { category: DbCategory }) => (
   <Link to={`/products?category=${category.id}`} className="group block">
     <div className="relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
       {category.image_url ? (
         <FallbackImage
-          src={category.image_url}
+          src={categoryImageMap[category.name] || category.image_url}
           alt={category.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />

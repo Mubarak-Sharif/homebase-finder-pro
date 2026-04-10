@@ -3,6 +3,7 @@ import { DbProduct } from "@/lib/supabase-api";
 import { useData } from "@/contexts/DataContext";
 import { Badge } from "@/components/ui/badge";
 import FallbackImage from "@/components/FallbackImage";
+import { productImageMap } from "@/assets/marbles";
 
 const stockColors: Record<string, string> = {
   IN_STOCK: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -14,7 +15,7 @@ const stockLabels: Record<string, string> = { IN_STOCK: "In Stock", LIMITED: "Li
 const ProductCard = ({ product }: { product: DbProduct }) => {
   const { categories } = useData();
   const category = categories.find(c => c.id === product.category_id);
-  const imgSrc = product.primary_image_url || (product.gallery_image_urls?.[0]) || "/placeholder.svg";
+  const imgSrc = productImageMap[product.name] || product.primary_image_url || (product.gallery_image_urls?.[0]) || "/placeholder.svg";
 
   return (
     <Link to={`/product/${product.id}`} className="group block">
