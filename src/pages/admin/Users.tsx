@@ -35,7 +35,7 @@ const AdminUsers = () => {
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     if (userId === user?.id) return;
-    const { error } = await supabase.from("profiles").update({ role: newRole }).eq("id", userId);
+    const { error } = await supabase.from("user_roles").update({ role: newRole }).eq("user_id", userId);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
