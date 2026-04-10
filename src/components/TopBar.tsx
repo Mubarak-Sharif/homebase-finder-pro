@@ -12,7 +12,7 @@ const TopBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = getItemCount();
 
-  const isAdminOrUserOrUser = isRole("ADMIN", "USER");
+  const isAdminOrUser = isRole("ADMIN", "USER");
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
