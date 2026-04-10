@@ -64,7 +64,7 @@ const AdminOrders = () => {
                   <th className="text-left p-3 text-muted-foreground font-medium">Total</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Status</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Update</th>
-                  {isRole("admin") && <th className="text-left p-3 text-muted-foreground font-medium">Delete</th>}
+                  {isRole("ADMIN") && <th className="text-left p-3 text-muted-foreground font-medium">Delete</th>}
                 </tr>
               </thead>
               <tbody>
@@ -85,7 +85,7 @@ const AdminOrders = () => {
                           <SelectContent>{statuses.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent>
                         </Select>
                       </td>
-                      {isRole("admin") && (
+                      {isRole("ADMIN") && (
                         <td className="p-3" onClick={e => e.stopPropagation()}>
                           <button onClick={async () => { if (confirm("Delete this order?")) { try { await deleteOrder(o.id); toast({ title: "Order deleted" }); } catch { toast({ title: "Error", description: "Failed to delete order.", variant: "destructive" }); } } }} className="p-1.5 rounded hover:bg-destructive/20 text-destructive"><Trash2 className="w-4 h-4" /></button>
                         </td>

@@ -14,7 +14,7 @@ const AdminSidebar = () => {
     { path: "/admin/products", icon: Package, label: "Products", show: true },
     { path: "/admin/categories", icon: Grid3X3, label: "Categories", show: true },
     { path: "/admin/orders", icon: ClipboardList, label: "Orders", show: true },
-    { path: "/admin/users", icon: Users, label: "Users", show: isRole("admin") },
+    { path: "/admin/users", icon: Users, label: "Users", show: isRole("ADMIN") },
     { path: "/admin/settings", icon: Settings, label: "Settings", show: true },
   ].filter(i => i.show);
 

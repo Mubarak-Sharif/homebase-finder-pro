@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
-export type UserRole = "admin" | "manager" | "customer";
+export type UserRole = "ADMIN" | "USER" | "CUSTOMER";
 
 export interface Profile {
   id: string;
@@ -20,6 +20,10 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   loading: boolean;
+  currentRole: UserRole;
+  isAdmin: boolean;
+  isUser: boolean;
+  isCustomer: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
@@ -36,29 +40,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
+  const fetchProfileWithRole = async (userId: string): Promise<Profile | null> => {
+    // Fetch profile
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .maybeSingle();
-    if (error) {
-      console.error("fetchProfile error:", error);
+    if (profileError || !profileData) {
+      console.error("fetchProfile error:", profileError);
       return null;
     }
-    return data as Profile | null;
+
+    // Fetch role from user_roles
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const role = (roleData?.role as UserRole) || "CUSTOMER";
+
+    return {
+      ...profileData,
+      role,
+    } as Profile;
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sess) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
 
       if (sess?.user) {
-        // Use setTimeout to avoid Supabase deadlock
         setTimeout(async () => {
-          const p = await fetchProfile(sess.user.id);
+          const p = await fetchProfileWithRole(sess.user.id);
           if (p) {
             p.email = sess.user.email;
             setProfile(p);
@@ -71,12 +87,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        fetchProfile(sess.user.id).then(p => {
+        fetchProfileWithRole(sess.user.id).then(p => {
           if (p) {
             p.email = sess.user.email;
             setProfile(p);
@@ -124,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return;
-    const { email, ...dbUpdates } = updates as any;
+    const { email, role, ...dbUpdates } = updates as any;
     const { error } = await supabase.from("profiles").update(dbUpdates).eq("id", user.id);
     if (error) { console.error("updateProfile error:", error); throw error; }
     setProfile(prev => prev ? { ...prev, ...updates } : null);
@@ -132,16 +147,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = async () => {
     if (!user) return;
-    const p = await fetchProfile(user.id);
+    const p = await fetchProfileWithRole(user.id);
     if (p) {
       p.email = user.email;
       setProfile(p);
     }
   };
 
+  const currentRole: UserRole = profile?.role || "CUSTOMER";
+
   return (
     <AuthContext.Provider value={{
       user, profile, session, isAuthenticated: !!user && !!profile, loading,
+      currentRole,
+      isAdmin: currentRole === "ADMIN",
+      isUser: currentRole === "USER",
+      isCustomer: currentRole === "CUSTOMER",
       login, register, logout, isRole, updateProfile, refreshProfile
     }}>
       {children}
