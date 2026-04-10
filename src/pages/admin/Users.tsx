@@ -1,6 +1,5 @@
 import AdminSidebar from "@/components/AdminSidebar";
 import RoleBadge from "@/components/RoleBadge";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface ProfileRow {
+interface UserWithRole {
   id: string;
   full_name: string | null;
   phone: string | null;
@@ -19,15 +18,32 @@ interface ProfileRow {
 const roles: UserRole[] = ["CUSTOMER", "USER", "ADMIN"];
 
 const AdminUsers = () => {
-  const { user, isRole } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [users, setUsers] = useState<ProfileRow[]>([]);
+  const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadUsers = async () => {
-    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    if (error) { console.error("loadUsers error:", error); return; }
-    setUsers(data || []);
+    // Fetch profiles
+    const { data: profiles, error: pErr } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (pErr) { console.error("loadUsers error:", pErr); return; }
+
+    // Fetch roles
+    const { data: rolesData } = await supabase.from("user_roles").select("user_id, role");
+    const roleMap = new Map((rolesData || []).map(r => [r.user_id, r.role]));
+
+    const merged: UserWithRole[] = (profiles || []).map(p => ({
+      id: p.id,
+      full_name: p.full_name,
+      phone: p.phone,
+      role: roleMap.get(p.id) || "CUSTOMER",
+      created_at: p.created_at,
+    }));
+
+    setUsers(merged);
     setLoading(false);
   };
 
@@ -77,7 +93,7 @@ const AdminUsers = () => {
                           <SelectTrigger className="w-[120px] h-8 text-xs bg-secondary"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {roles.map(r => (
-                              <SelectItem key={r} value={r} className="text-xs capitalize">{r}</SelectItem>
+                              <SelectItem key={r} value={r} className="text-xs">{r}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
