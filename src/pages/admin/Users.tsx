@@ -16,7 +16,7 @@ interface ProfileRow {
   created_at: string;
 }
 
-const roles: UserRole[] = ["customer", "manager", "admin"];
+const roles: UserRole[] = ["CUSTOMER", "USER", "ADMIN"];
 
 const AdminUsers = () => {
   const { user, isRole } = useAuth();
