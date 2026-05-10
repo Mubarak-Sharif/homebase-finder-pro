@@ -26,6 +26,7 @@ import AdminCategories from "./pages/admin/Categories";
 import AdminOrders from "./pages/admin/Orders";
 import AdminUsers from "./pages/admin/Users";
 import AdminSettings from "./pages/admin/Settings";
+import AdminNotifications from "./pages/admin/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
