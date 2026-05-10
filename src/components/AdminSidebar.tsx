@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, Grid3X3, ClipboardList, Users, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Package, Grid3X3, ClipboardList, Users, Settings, LogOut, ChevronLeft, ChevronRight, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import RoleBadge from "@/components/RoleBadge";
 import { useState } from "react";
