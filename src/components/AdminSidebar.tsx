@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, Grid3X3, ClipboardList, Users, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Package, Grid3X3, ClipboardList, Users, Settings, LogOut, ChevronLeft, ChevronRight, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import RoleBadge from "@/components/RoleBadge";
 import { useState } from "react";
@@ -15,6 +15,7 @@ const AdminSidebar = () => {
     { path: "/admin/categories", icon: Grid3X3, label: "Categories", show: true },
     { path: "/admin/orders", icon: ClipboardList, label: "Orders", show: true },
     { path: "/admin/users", icon: Users, label: "Users", show: isRole("ADMIN") },
+    { path: "/admin/notifications", icon: Bell, label: "Notifications", show: isRole("ADMIN") },
     { path: "/admin/settings", icon: Settings, label: "Settings", show: true },
   ].filter(i => i.show);
 
